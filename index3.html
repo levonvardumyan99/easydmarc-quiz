@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMARCbis Quiz — RFC 9989 / 9990 / 9991</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#19273f;
+    --ink-soft:#4b5a74;
+    --bg:#eef2f7;
+    --card:#ffffff;
+    --line:#d8e0ea;
+    --accent:#1f5fae;
+    --accent-soft:#e3edf9;
+    --pass:#0e7a52;
+    --pass-soft:#e2f3ec;
+    --fail:#bb3a3a;
+    --fail-soft:#fbeaea;
+    --tag:#7a3fa3;
+    --mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+    line-height:1.55;
+  }
+  .wrap{max-width:780px;margin:0 auto;padding:28px 18px 70px;}
+  header{
+    border-bottom:2px solid var(--ink);
+    padding-bottom:16px;
+    margin-bottom:24px;
+  }
+  .rfc-line{
+    font-family:var(--mono);
+    font-size:.78rem;
+    color:var(--ink-soft);
+    letter-spacing:.04em;
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:1.9rem;
+    line-height:1.15;
+  }
+  h1 .dim{color:var(--accent);}
+  code, .mono{
+    font-family:var(--mono);
+    font-size:.92em;
+    background:#f0ecf6;
+    color:var(--tag);
+    padding:1px 5px;
+    border-radius:4px;
+  }
+  /* ---------- intro ---------- */
+  .intro-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:26px;
+  }
+  .intro-card p{margin-bottom:14px;color:var(--ink-soft);}
+  .intro-card ul{margin:0 0 18px 20px;color:var(--ink-soft);}
+  .intro-card li{margin-bottom:4px;}
+  /* ---------- progress ---------- */
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:10px;font-family:var(--mono);font-size:.8rem;color:var(--ink-soft);
+  }
+  .bar{
+    height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:22px;
+  }
+  .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s;}
+  /* ---------- question card ---------- */
+  .qcard{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:26px;
+  }
+  .qmeta{
+    display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;
+  }
+  .pill{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.05em;
+    padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--ink-soft);
+    background:#f6f8fb;
+  }
+  .pill.type{background:var(--accent-soft);color:var(--accent);border-color:transparent;}
+  .qtext{
+    font-size:1.08rem;font-weight:600;margin-bottom:18px;white-space:pre-line;
+  }
+  .opts{display:flex;flex-direction:column;gap:10px;}
+  .opt{
+    display:flex;gap:12px;align-items:flex-start;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+    cursor:pointer;
+    background:#fbfcfe;
+    transition:border-color .12s, background .12s;
+    user-select:none;
+  }
+  .opt:hover{border-color:var(--accent);}
+  .opt.sel{border-color:var(--accent);background:var(--accent-soft);}
+  .opt .box{
+    flex:0 0 auto;width:19px;height:19px;margin-top:2px;
+    border:2px solid #aab7c8;border-radius:5px;background:#fff;position:relative;
+  }
+  .opt.radio .box{border-radius:50%;}
+  .opt.sel .box{border-color:var(--accent);background:var(--accent);}
+  .opt.sel .box::after{
+    content:"";position:absolute;inset:0;display:block;
+    background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/72% no-repeat;
+  }
+  .hint{font-size:.8rem;color:var(--ink-soft);margin-top:12px;font-family:var(--mono);}
+  /* ---------- nav ---------- */
+  .nav{display:flex;justify-content:space-between;margin-top:22px;gap:10px;}
+  button{
+    font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:700;
+    padding:11px 22px;border-radius:9px;border:none;cursor:pointer;
+  }
+  .btn-main{background:var(--ink);color:#fff;}
+  .btn-main:hover{background:#0f1a2e;}
+  .btn-main:disabled{background:#c2ccd8;cursor:not-allowed;}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border:1.5px solid var(--line);}
+  .btn-ghost:hover{border-color:var(--ink-soft);}
+  .btn-accent{background:var(--accent);color:#fff;}
+  .btn-accent:hover{background:#174d8f;}
+  /* ---------- results ---------- */
+  .score-card{
+    background:var(--ink);color:#fff;border-radius:12px;padding:30px 26px;margin-bottom:22px;
+  }
+  .score-card .verdict{font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;opacity:.75;margin-bottom:8px;}
+  .score-big{font-family:'Space Grotesk',sans-serif;font-size:2.6rem;font-weight:700;line-height:1;}
+  .score-sub{margin-top:8px;opacity:.85;font-size:.95rem;}
+  .topics{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:22px 26px;margin-bottom:26px;
+  }
+  .topics h2, .review-head{
+    font-family:'Space Grotesk',sans-serif;font-size:1.15rem;margin-bottom:14px;
+  }
+  .trow{display:flex;align-items:center;gap:12px;margin-bottom:9px;font-size:.88rem;}
+  .trow .tname{flex:0 0 215px;color:var(--ink-soft);}
+  .trow .tbar{flex:1;height:7px;background:var(--line);border-radius:4px;overflow:hidden;}
+  .trow .tbar i{display:block;height:100%;background:var(--accent);}
+  .trow .tnum{flex:0 0 52px;text-align:right;font-family:var(--mono);font-size:.78rem;}
+  .rev{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:18px 20px;margin-bottom:14px;border-left:5px solid var(--line);
+  }
+  .rev.ok{border-left-color:var(--pass);}
+  .rev.bad{border-left-color:var(--fail);}
+  .rev .status{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;font-weight:600;
+    display:inline-block;padding:2px 9px;border-radius:14px;margin-bottom:9px;
+  }
+  .rev.ok .status{background:var(--pass-soft);color:var(--pass);}
+  .rev.bad .status{background:var(--fail-soft);color:var(--fail);}
+  .rev .rq{font-weight:600;margin-bottom:9px;white-space:pre-line;}
+  .rev .ra{font-size:.9rem;margin-bottom:4px;}
+  .rev .ra b{font-weight:600;}
+  .rev .ra.yours{color:var(--fail);}
+  .rev .ra.right{color:var(--pass);}
+  .rev .why{
+    margin-top:10px;background:#f6f8fb;border:1px solid var(--line);
+    border-radius:8px;padding:11px 14px;font-size:.88rem;color:var(--ink-soft);
+  }
+  .rev .why b{color:var(--ink);}
+  .footer-note{
+    text-align:center;margin-top:34px;font-family:var(--mono);
+    font-size:.72rem;color:var(--ink-soft);
+  }
+  .footer-note a{color:var(--accent);text-decoration:none;}
+  @media (max-width:560px){
+    h1{font-size:1.5rem;}
+    .trow .tname{flex-basis:130px;font-size:.78rem;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="rfc-line">RFC 9989 · RFC 9990 · RFC 9991 — obsoletes RFC 7489</div>
+    <h1>DMARCbis <span class="dim">// knowledge check</span></h1>
+  </header>
+  <div id="app"></div>
+  <div class="footer-note">
+    sources: <a href="https://datatracker.ietf.org/doc/rfc9989/" target="_blank">rfc9989</a> ·
+    <a href="https://datatracker.ietf.org/doc/rfc9990/" target="_blank">rfc9990</a> ·
+    <a href="https://datatracker.ietf.org/doc/rfc9991/" target="_blank">rfc9991</a>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   QUESTION BANK
+   type: "single" | "multi" | "tf"
+   answer: index (single/tf) or array of indices (multi)
+   ============================================================ */
+const QUESTIONS = [
+
+/* ---------- A. STRUCTURE OF DMARCbis ---------- */
+{topic:"Structure of DMARCbis", type:"single",
+ q:"DMARCbis splits the original single DMARC specification into three separate documents. Which set is correct?",
+ options:[
+  "Core protocol, Aggregate Reporting, Failure Reporting",
+  "Core protocol, SPF Integration, DKIM Integration",
+  "Policy Records, Tree Walk, Reporting",
+  "Validation, Disposition, Forensics"],
+ answer:0,
+ explain:"DMARCbis is published as three documents: RFC 9989 (core DMARC protocol), RFC 9990 (Aggregate Reporting / RUA) and RFC 9991 (Failure Reporting / RUF)."},
+
+{topic:"Structure of DMARCbis", type:"single",
+ q:"The DMARC policy record format, the DNS tree walk and the alignment rules are all defined in which of the three DMARCbis documents?",
+ options:[
+  "The Aggregate Reporting document",
+  "The Failure Reporting document",
+  "The core DMARC protocol document",
+  "They are spread evenly across all three"],
+ answer:2,
+ explain:"The core document (RFC 9989) contains the protocol itself — records, tags, tree walk and alignment. The other two documents each describe only one report type: aggregate (RUA) and failure (RUF)."},
+
+{topic:"Structure of DMARCbis", type:"tf",
+ q:"True or false: Together, the three DMARCbis documents replace (obsolete) the original single DMARC specification.",
+ options:["True","False"],
+ answer:0,
+ explain:"Correct — the original single-document DMARC (RFC 7489) was split into three, and together they obsolete and replace it."},
+
+{topic:"Structure of DMARCbis", type:"single",
+ q:"Besides the original DMARC spec, DMARCbis also obsoletes (and absorbs) which earlier specification?",
+ options:[
+  "The experimental PSD DMARC extension",
+  "The SPF specification",
+  "The DKIM specification",
+  "The abuse reporting (ARF) format"],
+ answer:0,
+ explain:"The core DMARCbis document obsoletes both the original DMARC spec (RFC 7489) and the experimental PSD DMARC extension (RFC 9091) — PSD handling is now built into the core protocol. SPF, DKIM and ARF remain separate, untouched specs."},
+
+{topic:"Structure of DMARCbis", type:"single",
+ q:"The original DMARC spec was never a formal Internet Standard — it was published as Informational only. What changed with DMARCbis?",
+ options:[
+  "Nothing — it is still Informational",
+  "It became Experimental",
+  "It is now on the IETF Standards Track (a Proposed Standard)",
+  "It became a private industry standard outside the IETF"],
+ answer:2,
+ explain:"DMARCbis moves DMARC from Informational to the IETF Standards Track, published as Proposed Standards — a notable upgrade in formal standing."},
+
+
+
+/* ---------- B. TAG CHANGES ---------- */
+{topic:"Tag changes", type:"multi",
+ q:"Which tags from the old DMARC were REMOVED in DMARCbis? (select all that apply)",
+ options:["pct=","rf=","ri=","sp=","fo="],
+ answer:[0,1,2],
+ explain:"DMARCbis removes pct= (percentage), rf= (report format) and ri= (report interval). sp= and fo= remain valid tags."},
+
+{topic:"Tag changes", type:"multi",
+ q:"Which tags are NEW in DMARCbis compared to the old DMARC? (select all that apply)",
+ options:["np=","psd=","t=","adkim=","ruf="],
+ answer:[0,1,2],
+ explain:"DMARCbis adds np= (non-existent subdomain policy), psd= (Public Suffix Domain flag) and t= (test mode). adkim= and ruf= already existed in RFC 7489."},
+
+{topic:"Tag changes", type:"single",
+ q:"The new t= tag effectively replaces which mechanism from the old DMARC?",
+ options:["The pct= tag","The rf= tag","The sp= tag","The fo= tag"],
+ answer:0,
+ explain:"Message-sampling via pct= was removed; the t= test-mode tag takes over the useful part of its function (roughly the old pct=0 behavior). See RFC 9989 Appendix A.6."},
+
+
+{topic:"Tag changes", type:"tf",
+ q:"True or false: The v= tag must be the first tag in the record and its value is case sensitive — otherwise the entire record is ignored.",
+ options:["True","False"],
+ answer:0,
+ explain:"Correct. If v=DMARC1 is not first, is absent, or differs in case, the whole record MUST be ignored."},
+
+{topic:"Tag changes", type:"single",
+ q:"In DMARCbis, what is the requirement level of the p= tag in a policy record?",
+ options:[
+  "REQUIRED — records without it are invalid",
+  "RECOMMENDED — if missing, the record is treated as p=none",
+  "OPTIONAL — if missing, receivers apply p=reject",
+  "Deprecated in favor of sp="],
+ answer:1,
+ explain:"A change from RFC 7489: p= is now RECOMMENDED, not mandatory. An otherwise valid record without p= is treated as if it contained p=none."},
+
+{topic:"Tag changes", type:"single",
+ q:"Scenario: a receiver retrieves the record:\nv=DMARC1; rua=mailto:reports@example.com\nThere is no p= tag. What happens?",
+ options:[
+  "The record is discarded as malformed",
+  "The receiver treats it as p=none and continues processing",
+  "The receiver applies p=quarantine as a safe default",
+  "DMARC processing is skipped for this message"],
+ answer:1,
+ explain:"With no valid p= but at least one syntactically valid rua= URI, the receiver MUST act as if p=none was published and continue (monitoring still works)."},
+
+
+{topic:"Tag changes", type:"single",
+ q:"A domain publishes p=reject; t=y. A message fails DMARC at a receiver honoring the test mode. Which policy is applied?",
+ options:["reject","quarantine","none","Whatever sp= says"],
+ answer:1,
+ explain:"t=y asks receivers to apply the policy one level below the declared one: reject→quarantine, quarantine→none. It signals the owner is still testing."},
+
+{topic:"Tag changes", type:"tf",
+ q:"True or false: Setting t=y also suppresses the generation of aggregate and failure reports.",
+ options:["True","False"],
+ answer:1,
+ explain:"False — the t= tag does not affect reporting at all, and it has no effect when the policy is already 'none'. Reports keep flowing so the owner can keep monitoring."},
+
+{topic:"Tag changes", type:"single",
+ q:"How must a DMARCbis-compliant evaluator handle tags it does not recognize in a policy record?",
+ options:[
+  "Ignore them",
+  "Discard the whole record",
+  "Treat the record as p=none",
+  "Log an error and reject the message"],
+ answer:0,
+ explain:"Unknown tags MUST be ignored. This keeps the format extensible — new tags can be registered without requiring a new DMARC version."},
+
+
+/* ---------- C. PSD DMARC ---------- */
+{topic:"PSD DMARC", type:"tf",
+ q:"True or false: PSD DMARC used to be a separate, experimental, opt-in extension; in DMARCbis it is integrated into the core protocol, and every tree walk naturally evaluates PSD-level records.",
+ options:["True","False"],
+ answer:0,
+ explain:"Correct. RFC 9091 (experimental) is obsoleted; PSD handling is now built directly into RFC 9989's policy discovery and tree walk — no separate opt-in mechanism."},
+
+{topic:"PSD DMARC", type:"single",
+ q:"A Public Suffix Operator (e.g. the operator of .bank) publishes a DMARC record for its PSD. What MUST it include?",
+ options:["psd=y","psd=n","np=reject","sp=none"],
+ answer:0,
+ explain:"RFC 9989 §5.2: if a PSO publishes a DMARC Policy Record, it MUST include the psd tag with value 'y'."},
+
+{topic:"PSD DMARC", type:"single",
+ q:"What are the possible values of the psd= tag, and what is the default?",
+ options:[
+  "y / n — default n",
+  "y / n / u — default u",
+  "0 / 1 — default 0",
+  "y / n / u — default y"],
+ answer:1,
+ explain:"psd= can be y (this is a PSD), n (this is an Organizational Domain), or u (unknown — use the tree walk to determine). The default is u."},
+
+{topic:"PSD DMARC", type:"single",
+ q:"Scenario: during a tree walk for a.example.com, the only valid record found is at _dmarc.com and it contains psd=y. What is the Organizational Domain?",
+ options:["com","example.com","a.example.com","There is none"],
+ answer:1,
+ explain:"When psd=y is found at a domain other than the walk's starting point, the Organizational Domain is the domain one label below it — here example.com (one label below com)."},
+
+{topic:"PSD DMARC", type:"single",
+ q:"Scenario: a record with psd=n is published at _dmarc.dept.example.com. What does that declare?",
+ options:[
+  "dept.example.com is a Public Suffix Domain",
+  "dept.example.com is the Organizational Domain for itself and its subdomains",
+  "The record only applies to non-existent subdomains",
+  "The tree walk must skip this node"],
+ answer:1,
+ explain:"psd=n declares 'I am an Organizational Domain'. This supports decentralized DNS management — a department can declare its own org domain with its own policy and reporting addresses."},
+
+{topic:"PSD DMARC", type:"single",
+ q:"For privacy reasons, PSD-level DMARC feedback MUST be limited to which type of report?",
+ options:[
+  "Failure reports only",
+  "Aggregate reports only",
+  "Both aggregate and failure reports",
+  "Neither — PSDs cannot receive reports"],
+ answer:1,
+ explain:"PSD feedback MUST be limited to aggregate reports. Failure reports carry message-level detail (potential PII) and pose too great a leakage risk toward the PSO."},
+
+
+/* ---------- D. POLICY DISCOVERY / TREE WALK ---------- */
+{topic:"Policy discovery & tree walk", type:"single",
+ q:"What does the DMARCbis DNS Tree Walk replace from the old DMARC?",
+ options:[
+  "The use of a Public Suffix List (PSL) to find the Organizational Domain",
+  "SPF record lookups",
+  "The _dmarc DNS label",
+  "DKIM key retrieval"],
+ answer:0,
+ explain:"The biggest architectural change: RFC 7489 relied on an external PSL; DMARCbis determines the Organizational Domain via DNS queries up the tree (the Tree Walk)."},
+
+{topic:"Policy discovery & tree walk", type:"single",
+ q:"What is the maximum number of DNS queries a single tree walk may perform?",
+ options:["5","8","10","Unlimited"],
+ answer:1,
+ explain:"Eight. This caps the work a receiver does and prevents denial-of-service via Author Domains with dozens of labels."},
+
+
+{topic:"Policy discovery & tree walk", type:"single",
+ q:"In what order of preference is the applicable DMARC Policy Record selected?",
+ options:[
+  "PSD → Organizational Domain → Author Domain",
+  "Author Domain → Organizational Domain → PSD",
+  "Organizational Domain → Author Domain → PSD",
+  "Whichever record has the strictest policy"],
+ answer:1,
+ explain:"Highest preference is a record at the Author Domain itself, then its Organizational Domain, then the PSD."},
+
+{topic:"Policy discovery & tree walk", type:"single",
+ q:"Scenario: mail fails DMARC with Author Domain shop.example.com (the subdomain EXISTS in DNS). example.com publishes:\nv=DMARC1; p=reject; sp=none; np=quarantine\nNo record exists at shop.example.com. Which policy applies?",
+ options:["reject","none","quarantine","No policy applies"],
+ answer:1,
+ explain:"For an existing subdomain covered by the org domain's record, sp= applies — here sp=none. np= is only for non-existent subdomains, and p= only for the org domain itself."},
+
+{topic:"Policy discovery & tree walk", type:"single",
+ q:"Scenario: a phisher sends mail from ghost.example.com, which returns NXDOMAIN. example.com publishes:\nv=DMARC1; p=none; np=reject\nWhich policy applies to the failing mail?",
+ options:["none","quarantine","reject","No DMARC applies because the domain doesn't exist"],
+ answer:2,
+ explain:"This is exactly what np= is for: non-existent subdomains get their own (typically stricter) policy — here reject — while the live domain stays at p=none."},
+
+{topic:"Policy discovery & tree walk", type:"single",
+ q:"If np= is absent for a non-existent subdomain, which policy is applied?",
+ options:[
+  "Always p=",
+  "sp= if present, otherwise p=",
+  "none, always",
+  "The PSD's policy"],
+ answer:1,
+ explain:"The fallback chain for non-existent subdomains is np= → sp= → p=. If np= is missing, sp= applies if present; otherwise p=."},
+
+{topic:"Policy discovery & tree walk", type:"tf",
+ q:"True or false: An sp= tag in a record published on a subdomain (below the Organizational Domain) is ignored.",
+ options:["True","False"],
+ answer:0,
+ explain:"Correct — sp= only has meaning on records at the Organizational Domain (or PSD); due to how policy discovery works it is ignored elsewhere."},
+
+{topic:"Policy discovery & tree walk", type:"single",
+ q:"Scenario: a large org uses the Author Domain mail.a.b.c.d.e.f.g.example.com (9+ labels) and wants a specific policy applied to it. What MUST it do?",
+ options:[
+  "Publish the policy at example.com with sp=",
+  "Publish a DMARC record exactly at that long name, since the tree walk will skip middle labels",
+  "Use psd=y at example.com",
+  "Nothing — the tree walk finds records at every level"],
+ answer:1,
+ explain:"Because of the 8-query cap, the walk skips intermediate labels on very deep names. A record published exactly at the Author Domain is always queried first, so that's the only guaranteed spot (RFC 9989 §5.1.8)."},
+
+/* ---------- E. ALIGNMENT ---------- */
+{topic:"Alignment rules", type:"single",
+ q:"Under DMARCbis, two domains are in RELAXED alignment when…",
+ options:[
+  "they share the same Organizational Domain",
+  "they are identical strings",
+  "they share the same TLD",
+  "either one is a subdomain of any .com domain"],
+ answer:0,
+ explain:"Relaxed alignment = same Organizational Domain (as determined by the tree walk). Strict alignment requires the domains to be identical."},
+
+{topic:"Alignment rules", type:"single",
+ q:"Two domains are in STRICT alignment when…",
+ options:[
+  "they share the same Organizational Domain",
+  "they are identical",
+  "one contains the other",
+  "both publish DMARC records"],
+ answer:1,
+ explain:"Strict alignment is a simple exact match (case-insensitive) between the Author Domain and the Authenticated Identifier."},
+
+{topic:"Alignment rules", type:"single",
+ q:"What are the default values of adkim= and aspf=?",
+ options:[
+  "Both s (strict)",
+  "adkim=s, aspf=r",
+  "Both r (relaxed)",
+  "adkim=r, aspf=s"],
+ answer:2,
+ explain:"Both default to relaxed (r). The RFC notes that in practice nearly all Domain Owners find relaxed alignment sufficient."},
+
+{topic:"Alignment rules", type:"single",
+ q:"Scenario: From: news.example.com. A DKIM signature with d=foo.example.com validates. The policy has adkim=r. DKIM alignment result?",
+ options:[
+  "Aligned — both have Organizational Domain example.com",
+  "Not aligned — the domains differ",
+  "Aligned only if SPF also passes",
+  "Cannot be determined"],
+ answer:0,
+ explain:"Relaxed mode: foo.example.com and news.example.com share the Organizational Domain example.com, so the identifiers align and DMARC passes via DKIM."},
+
+{topic:"Alignment rules", type:"single",
+ q:"Same scenario (From: news.example.com, valid DKIM d=foo.example.com) but the record sets adkim=s. Result?",
+ options:[
+  "Still aligned",
+  "Not aligned — strict mode requires identical domains",
+  "Aligned because both end in example.com",
+  "The record is invalid"],
+ answer:1,
+ explain:"Strict mode requires the DKIM d= domain to be IDENTICAL to the Author Domain. foo.example.com ≠ news.example.com, so no alignment — DMARC would need another aligned identifier to pass."},
+
+{topic:"Alignment rules", type:"single",
+ q:"Which SPF identity does DMARC use for alignment?",
+ options:[
+  "The HELO/EHLO identity only",
+  "The MAIL FROM (envelope sender) identity only",
+  "Both HELO and MAIL FROM",
+  "The From: header domain"],
+ answer:1,
+ explain:"DMARC relies solely on SPF validation of the MAIL FROM identity. (For a null reverse-path, SPF itself substitutes postmaster@HELO per RFC 7208 §2.4.)"},
+
+{topic:"Alignment rules", type:"tf",
+ q:"True or false: If a message carries five DKIM signatures and only one validated signature aligns with the Author Domain, DMARC still passes.",
+ options:["True","False"],
+ answer:0,
+ explain:"Correct — a message produces a DMARC pass if ANY validated DKIM identifier (or the SPF identifier) aligns. Extra unaligned or failing signatures don't hurt."},
+
+{topic:"Alignment rules", type:"single",
+ q:"Scenario: From: example.com. SPF passes for MAIL FROM bounce.bulkmailer.net. There is no DKIM signature. The example.com record uses default alignment. DMARC result?",
+ options:[
+  "Pass — SPF passed",
+  "Fail — the SPF domain doesn't share an Organizational Domain with example.com",
+  "Pass — relaxed alignment ignores the Organizational Domain",
+  "Temperror"],
+ answer:1,
+ explain:"A raw SPF pass is not enough: the validated domain (bulkmailer.net) must ALIGN with the Author Domain (example.com). Different Organizational Domains → no alignment → DMARC fail. This is the classic unconfigured-ESP situation."},
+
+
+/* ---------- F. AGGREGATE REPORTING (RUA) ---------- */
+{topic:"Aggregate reporting (RUA)", type:"single",
+ q:"What format is a DMARC aggregate report?",
+ options:["CSV","JSON","An XML document","Plain-text ARF"],
+ answer:2,
+ explain:"Aggregate reports are XML documents conforming to the schema in RFC 9990 Appendix A. (Failure reports are the ones that use ARF.)"},
+
+
+{topic:"Aggregate reporting (RUA)", type:"single",
+ q:"How should the XML attachment of an aggregate report be prepared for email delivery?",
+ options:[
+  "Compressed with GZIP (application/gzip), or text/xml if uncompressed",
+  "Always uncompressed text/xml",
+  "ZIP archive only",
+  "Base64 inside the body, no attachment"],
+ answer:0,
+ explain:"The XML SHOULD be GZIP-compressed (media type application/gzip, extension .xml.gz); uncompressed text/xml (.xml) is also allowed but risks exceeding SMTP size limits."},
+
+{topic:"Aggregate reporting (RUA)", type:"single",
+ q:"Which is a correctly formatted aggregate report attachment filename?",
+ options:[
+  "report-example.com-2026.xml",
+  "mail.receiver.example!example.com!1013662812!1013749130.xml.gz",
+  "example.com_dmarc_report.gz",
+  "1013662812-1013749130@example.com.xml"],
+ answer:1,
+ explain:"The format is receiver!policy-domain!begin-timestamp!end-timestamp[!unique-id].xml(.gz) — fields separated by '!', timestamps in seconds since epoch."},
+
+{topic:"Aggregate reporting (RUA)", type:"tf",
+ q:"True or false: One aggregate report may cover several different DMARC Policy Domains to save bandwidth.",
+ options:["True","False"],
+ answer:1,
+ explain:"False — each report MUST contain data for exactly one DMARC Policy Domain (and one policy configuration). A separate report is generated per Policy Domain."},
+
+{topic:"Aggregate reporting (RUA)", type:"single",
+ q:"Scenario: a receiver saw traffic for example.com, foo.example.com and bar.example.com. Explicit DMARC records exist for example.com and bar.example.com only. How is this reported?",
+ options:[
+  "One combined report for all three domains",
+  "Three reports, one per domain",
+  "Two reports: one for bar.example.com, and one for example.com that also contains a record for foo.example.com",
+  "Two reports: foo and bar combined, example.com separate"],
+ answer:2,
+ explain:"Reports follow the DMARC Policy Domain. foo.example.com has no record of its own, so its data goes as a separate <record> inside the example.com report. bar.example.com gets its own report."},
+
+{topic:"Aggregate reporting (RUA)", type:"single",
+ q:"How often SHOULD Mail Receivers send aggregate reports?",
+ options:[
+  "At least once every 24 hours",
+  "Once a week",
+  "Once a month",
+  "Only when failures occur"],
+ answer:0,
+ explain:"Receivers SHOULD generate and send aggregate reports at least daily; the reporting period typically covers one UTC day starting at 0000 UTC."},
+
+{topic:"Aggregate reporting (RUA)", type:"single",
+ q:"DMARCbis aggregate reports can include a discovery_method element. What are its possible values?",
+ options:[
+  "psl and treewalk",
+  "dns and registry",
+  "relaxed and strict",
+  "v1 and v2"],
+ answer:0,
+ explain:"discovery_method tells the Domain Owner whether the reporter found the policy via the old PSL method (RFC 7489) or the new tree walk (RFC 9989) — useful during the transition."},
+
+{topic:"Aggregate reporting (RUA)", type:"single",
+ q:"If a domain's DMARC record contains NO rua= tag, what must receivers do about aggregate reports?",
+ options:[
+  "Send them to postmaster@domain",
+  "Send them to the PSD's rua address",
+  "Not generate aggregate reports for the domain",
+  "Queue them until a rua= appears"],
+ answer:2,
+ explain:"No rua= means no aggregate reports: receivers MUST NOT generate them for that domain. (Note: PSD records are also not a fallback rua source for org domains that declined to publish one.)"},
+
+{topic:"Aggregate reporting (RUA)", type:"single",
+ q:"Scenario: blue.example.com publishes rua=mailto:reports@red.example.net (a different Organizational Domain). Before sending reports there, the receiver must query which DNS name?",
+ options:[
+  "blue.example.com._report._dmarc.red.example.net (TXT)",
+  "_dmarc.red.example.net (TXT)",
+  "red.example.net._report._dmarc.blue.example.com (TXT)",
+  "No verification is needed"],
+ answer:0,
+ explain:"External destinations must be verified: the receiver queries <policy-domain>._report._dmarc.<destination-host> for a TXT record starting with v=DMARC1. This stops attackers from flooding victims with unwanted reports."},
+
+
+{topic:"Aggregate reporting (RUA)", type:"single",
+ q:"Compared to the old DMARC, what is now REQUIRED when reporting a DKIM result in an aggregate report?",
+ options:[
+  "The DKIM selector (s= tag)",
+  "The full DKIM signature",
+  "The public key",
+  "The canonicalized body hash"],
+ answer:0,
+ explain:"The selector element is now required alongside the d= domain for each reported DKIM signature — previously it was optional, making source identification harder."},
+
+{topic:"Aggregate reporting (RUA)", type:"single",
+ q:"A receiver delivered a message normally even though it failed DMARC, because the domain published t=y. Which policy override reason should appear in the aggregate report?",
+ options:["local_policy","mailing_list","policy_test_mode","trusted_forwarder"],
+ answer:2,
+ explain:"policy_test_mode is the new override reason added for exactly this case: the message was exempted from policy by the t= tag. local_policy / mailing_list / trusted_forwarder cover other override situations."},
+
+{topic:"Aggregate reporting (RUA)", type:"tf",
+ q:"True or false: The email stream that carries DMARC aggregate reports must itself pass DMARC with an aligned result.",
+ options:["True","False"],
+ answer:0,
+ explain:"Correct — report mail MUST conform to DMARC and produce an aligned pass, minimizing the risk of consumers processing fraudulent reports."},
+
+
+/* ---------- G. FAILURE REPORTING (RUF) ---------- */
+{topic:"Failure reporting (RUF)", type:"single",
+ q:"DMARC failure reports are based on which format?",
+ options:[
+  "XML, the same format as aggregate reports",
+  "ARF — the Abuse Reporting Format (the standard format for email abuse reports)",
+  "CSV with one row per failure",
+  "JSON Web Tokens"],
+ answer:1,
+ explain:"Failure reports use the Abuse Reporting Format (multipart/report with message/feedback-report), unlike aggregate reports which are XML."},
+
+{topic:"Failure reporting (RUF)", type:"single",
+ q:"What is the default value of the fo= tag, and what does it mean?",
+ options:[
+  "fo=1 — report if any mechanism fails",
+  "fo=0 — report only if ALL underlying mechanisms fail to produce an aligned pass",
+  "fo=d — report DKIM failures only",
+  "fo=s — report SPF failures only"],
+ answer:1,
+ explain:"Default is fo=0: generate a failure report only when neither SPF nor DKIM produced an aligned pass (i.e., the message failed DMARC overall). fo=1 fires if ANY mechanism fails."},
+
+{topic:"Failure reporting (RUF)", type:"tf",
+ q:"True or false: The fo= tag content must be ignored if the record has no ruf= tag.",
+ options:["True","False"],
+ answer:0,
+ explain:"Correct — fo= only configures failure reports, and without ruf= there is nowhere to send them, so it MUST be ignored."},
+
+{topic:"Failure reporting (RUF)", type:"multi",
+ q:"Which are valid values within the fo= tag? (select all that apply)",
+ options:["0","1","d","s","r"],
+ answer:[0,1,2,3],
+ explain:"Valid fo= values are 0, 1, d and s (colon-separated, e.g. fo=1:d:s). Note that 0 and 1 are mutually exclusive. 'r' is not a valid fo value."},
+
+{topic:"Failure reporting (RUF)", type:"single",
+ q:"What MUST report generators do regarding outgoing failure reports?",
+ options:[
+  "Send one per failed message, always",
+  "Implement a rate limit so consumers aren't flooded",
+  "Encrypt every report with S/MIME",
+  "Send them only on weekends"],
+ answer:1,
+ explain:"Generators MUST rate-limit outgoing failure reports — otherwise an attacker spoofing a domain could weaponize the reports themselves into a denial of service against the report consumer."},
+
+{topic:"Failure reporting (RUF)", type:"single",
+ q:"Why do many large mailbox providers send aggregate reports but NOT failure reports?",
+ options:[
+  "Failure reports are too expensive to compress",
+  "Privacy — failure reports can contain message content and PII",
+  "The ruf= tag was removed in DMARCbis",
+  "Failure reports require a paid IANA registration"],
+ answer:1,
+ explain:"Failure reports can include headers or full message content (addresses, subjects, bodies). RFC 9991 notes many providers heavily redact them or don't send them at all; aggregate reports are the recommended visibility tool."},
+
+{topic:"Failure reporting (RUF)", type:"single",
+ q:"How should a report generator treat a ruf= tag found in a DMARC record that also contains psd=y?",
+ options:[
+  "Honor it like any other ruf=",
+  "Not honor it, unless there are specific agreements between the parties",
+  "Convert it to a rua= destination",
+  "Honor it only for non-existent domains"],
+ answer:1,
+ explain:"Report generators MUST NOT consider ruf= tags in psd=y records (absent a specific agreement) — failure reports to a PSO could leak private organizational mail data."},
+
+
+
+/* ---------- H. RECEIVER BEHAVIOR / SCENARIOS ---------- */
+{topic:"Receiver behavior & scenarios", type:"single",
+ q:"Scenario: a message fails DMARC and the Author Domain publishes p=reject. Per DMARCbis, what must a participating receiver do?",
+ options:[
+  "Reject the message — the policy is binding",
+  "Not reject solely on the policy; combine it with other knowledge, and absent other analysis treat it as if it were p=quarantine",
+  "Always deliver to the inbox anyway",
+  "Bounce it back to the From: address"],
+ answer:1,
+ explain:"A notable DMARCbis change: receivers MUST NOT reject solely because of p=reject. The policy is one input to disposition; without other analysis, failing mail is treated as quarantine. This protects mailing lists and legitimate indirect flows."},
+
+{topic:"Receiver behavior & scenarios", type:"single",
+ q:"Per DMARCbis conformance rules, a Domain Owner publishing p=reject MUST NOT…",
+ options:[
+  "use relaxed alignment",
+  "rely solely on SPF for a DMARC pass — aligned DKIM signatures are required",
+  "publish an sp= tag",
+  "request aggregate reports"],
+ answer:1,
+ explain:"Because forwarding and relays break SPF (the connecting IP changes) while DKIM usually survives, p=reject domains MUST apply valid aligned DKIM signatures and not depend on SPF alone."},
+
+{topic:"Receiver behavior & scenarios", type:"single",
+ q:"Scenario: a user at example.com (p=reject) posts to a traditional mailing list that relays the message unmodified. At list subscribers' providers, what typically happens to authentication?",
+ options:[
+  "SPF breaks (new sending IP); DKIM usually still validates if the list didn't modify signed content",
+  "DKIM breaks but SPF survives",
+  "Both always survive",
+  "Both always break"],
+ answer:0,
+ explain:"Relaying changes the connecting IP, so SPF fails against the original MAIL FROM; an intact DKIM signature generally remains valid. That's why DKIM is essential for indirect mail flows — and why lists rewrite From: headers as a workaround."},
+
+{topic:"Receiver behavior & scenarios", type:"single",
+ q:"A receiver discovers a policy of p=none for a failing message. What does DMARCbis say about handling?",
+ options:[
+  "Quarantine it lightly",
+  "Discovered p=none MUST NOT modify existing mail handling",
+  "Add a warning banner",
+  "Delay delivery by 24 hours"],
+ answer:1,
+ explain:"p=none is Monitoring Mode: the owner expresses no handling preference, and discovery of p=none MUST NOT change how the receiver would otherwise process the message. It exists to enable reporting."},
+
+
+{topic:"Receiver behavior & scenarios", type:"single",
+ q:"Scenario: a temporary DNS error prevents the receiver from completing DMARC checks. What does DMARCbis say?",
+ options:[
+  "The message must be rejected permanently",
+  "It cannot be considered pass or fail; handling is at the receiver's discretion (e.g. defer with a 4xy reply, or fail open)",
+  "It automatically counts as a DMARC pass",
+  "It automatically counts as a DMARC fail with p applied"],
+ answer:1,
+ explain:"With incomplete DNS results the message can't pass or fail, so the policy can't be applied. Receivers may 'fail open' (deliver) or 'fail closed' (tempfail with 4xy so the sender retries)."},
+
+
+{topic:"Receiver behavior & scenarios", type:"single",
+ q:"Scenario: deciding whether to move from p=none to enforcement, what rollout does the RFC suggest for a domain with general users?",
+ options:[
+  "Jump straight to p=reject to maximize protection",
+  "Monitor with p=none (≥ a month), then p=quarantine for a similar period, comparing report data before considering p=reject",
+  "Use pct=50 to ramp up gradually",
+  "Set t=y permanently"],
+ answer:1,
+ explain:"The staged path (none → quarantine → reject, validated with aggregate report data at each step) is the recommended approach. pct= no longer exists in DMARCbis — t=y is the testing signal, not a permanent state."},
+
+{topic:"Receiver behavior & scenarios", type:"tf",
+ q:"True or false: A DMARC pass guarantees the message is safe and should be delivered to the inbox.",
+ options:["True","False"],
+ answer:1,
+ explain:"False — a pass only validates authorized use of the Author Domain; it carries no value assertion about the message. Receivers may still quarantine or reject passing mail (spammers can authenticate their own domains perfectly)."},
+
+{topic:"Receiver behavior & scenarios", type:"single",
+ q:"Scenario: traffic for a domain shows DMARC fails caused by a legitimate third-party sender the company forgot about. Per DMARCbis, what MUST happen before moving the domain to an enforcement policy?",
+ options:[
+  "Nothing — enforce immediately and let the sender complain",
+  "The authentication shortcomings of legitimate mail streams must be remediated first",
+  "The third party must be blocked at the firewall",
+  "np= must be set to reject"],
+ answer:1,
+ explain:"RFC 9989 §5.1.6: legitimate but unaligned/unauthenticated streams MUST be fixed before publishing an enforcement policy — otherwise enforcement will damage your own mail."},
+
+];
+
+/* ============================================================
+   QUIZ ENGINE
+   ============================================================ */
+const TYPE_LABEL = {single:"single choice", multi:"multi-select", tf:"true / false"};
+let order = [], current = 0, answers = [], started = false;
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function init(){
+  /* shuffle question order; shuffle option order except for T/F */
+  order = shuffle(QUESTIONS.map((q,i)=>i));
+  answers = QUESTIONS.map(()=>null);
+  QUESTIONS.forEach(q=>{
+    if(q.type==="tf") { q._opts = q.options.map((o,i)=>({t:o, orig:i})); return; }
+    q._opts = shuffle(q.options.map((o,i)=>({t:o, orig:i})));
+  });
+}
+
+const app = document.getElementById("app");
+
+function renderIntro(){
+  app.innerHTML = `
+  <div class="intro-card">
+    <p><strong style="color:var(--ink)">${QUESTIONS.length} questions</strong> on the new DMARC specification (DMARCbis), covering:</p>
+    <ul>
+      <li>Structure of the new specs (RFC 9989 / 9990 / 9991)</li>
+      <li>Tag changes — removed, added, and updated tags (<code>np=</code>, <code>sp=</code>, <code>pct=</code>, <code>t=</code>…)</li>
+      <li>PSD DMARC and the DNS Tree Walk</li>
+      <li>Relaxed vs. strict alignment</li>
+      <li>Aggregate (RUA) and failure (RUF) reporting changes</li>
+      <li>Receiver behavior and real-world scenarios</li>
+    </ul>
+    <p>Question types are mixed: single choice, multi-select and true/false. You won't see whether you were right after each question — the full breakdown, with explanations for anything you missed, appears at the end.</p>
+    <button class="btn-main" onclick="startQuiz()">Start the quiz</button>
+  </div>`;
+}
+
+function startQuiz(){
+  started = true; current = 0;
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const qi = order[current];
+  const q = QUESTIONS[qi];
+  const sel = answers[qi];
+  const isMulti = q.type==="multi";
+
+  const optsHtml = q._opts.map((o,di)=>{
+    const isSel = isMulti ? (sel||[]).includes(o.orig) : sel===o.orig;
+    return `<div class="opt ${isMulti?'':'radio'} ${isSel?'sel':''}" onclick="pick(${qi},${o.orig},${isMulti})">
+      <span class="box"></span><span>${escapeHtml(o.t)}</span>
+    </div>`;
+  }).join("");
+
+  app.innerHTML = `
+    <div class="topbar">
+      <span>Q ${current+1} / ${QUESTIONS.length}</span>
+      <span>${answers.filter(a=>a!==null && !(Array.isArray(a)&&a.length===0)).length} answered</span>
+    </div>
+    <div class="bar"><i style="width:${(current)/QUESTIONS.length*100}%"></i></div>
+    <div class="qcard">
+      <div class="qmeta">
+        <span class="pill">${escapeHtml(q.topic)}</span>
+        <span class="pill type">${TYPE_LABEL[q.type]}</span>
+      </div>
+      <div class="qtext">${escapeHtml(q.q)}</div>
+      <div class="opts">${optsHtml}</div>
+      ${isMulti?'<div class="hint">// select every option that applies</div>':''}
+    </div>
+    <div class="nav">
+      <button class="btn-ghost" ${current===0?'disabled':''} onclick="goPrev()">&#8592; Back</button>
+      ${current===QUESTIONS.length-1
+        ? `<button class="btn-accent" onclick="finish()">Finish &amp; see results</button>`
+        : `<button class="btn-main" onclick="goNext()">Next &#8594;</button>`}
+    </div>`;
+  window.scrollTo({top:0});
+}
+
+function pick(qi, origIdx, isMulti){
+  if(isMulti){
+    if(!Array.isArray(answers[qi])) answers[qi]=[];
+    const pos = answers[qi].indexOf(origIdx);
+    if(pos>=0) answers[qi].splice(pos,1); else answers[qi].push(origIdx);
+  }else{
+    answers[qi]=origIdx;
+  }
+  renderQuestion();
+}
+
+function goNext(){ if(current<QUESTIONS.length-1){current++; renderQuestion();} }
+function goPrev(){ if(current>0){current--; renderQuestion();} }
+
+function isCorrect(q, ans){
+  if(ans===null) return false;
+  if(q.type==="multi"){
+    if(!Array.isArray(ans)) return false;
+    const a=[...ans].sort().join(","), b=[...q.answer].sort().join(",");
+    return a===b;
+  }
+  return ans===q.answer;
+}
+
+function answerText(q, ans){
+  if(ans===null || (Array.isArray(ans)&&ans.length===0)) return "(no answer)";
+  if(q.type==="multi") return [...ans].sort((a,b)=>a-b).map(i=>q.options[i]).join("  +  ");
+  return q.options[ans];
+}
+function correctText(q){
+  if(q.type==="multi") return q.answer.map(i=>q.options[i]).join("  +  ");
+  return q.options[q.answer];
+}
+
+function finish(){
+  const unanswered = answers.filter((a,i)=>a===null || (Array.isArray(a)&&a.length===0)).length;
+  if(unanswered>0 && !confirm(`You have ${unanswered} unanswered question(s). They will count as wrong. Finish anyway?`)) return;
+  renderResults();
+}
+
+function renderResults(){
+  let correct = 0;
+  const topicStats = {};
+  QUESTIONS.forEach((q,i)=>{
+    if(!topicStats[q.topic]) topicStats[q.topic]={ok:0,total:0};
+    topicStats[q.topic].total++;
+    if(isCorrect(q, answers[i])){correct++; topicStats[q.topic].ok++;}
+  });
+  const pct = Math.round(correct/QUESTIONS.length*100);
+  const verdict = pct>=85?"dmarc=pass":(pct>=60?"dmarc=pass (relaxed)":"dmarc=fail");
+  const sub = pct>=85?"Excellent — you'd survive a tree walk."
+            : pct>=60?"Solid foundation — review the misses below."
+            : "Time for another pass through the RFCs — the misses below show exactly where.";
+
+  const topicsHtml = Object.entries(topicStats).map(([name,s])=>{
+    const p = Math.round(s.ok/s.total*100);
+    return `<div class="trow">
+      <span class="tname">${escapeHtml(name)}</span>
+      <span class="tbar"><i style="width:${p}%"></i></span>
+      <span class="tnum">${s.ok}/${s.total}</span>
+    </div>`;
+  }).join("");
+
+  const reviewHtml = order.map((qi,pos)=>{
+    const q = QUESTIONS[qi];
+    const ok = isCorrect(q, answers[qi]);
+    return `<div class="rev ${ok?'ok':'bad'}">
+      <span class="status">${ok?'CORRECT':'INCORRECT'} &nbsp;·&nbsp; Q${pos+1} · ${escapeHtml(q.topic)}</span>
+      <div class="rq">${escapeHtml(q.q)}</div>
+      ${ok
+        ? `<div class="ra right"><b>Your answer:</b> ${escapeHtml(answerText(q,answers[qi]))}</div>`
+        : `<div class="ra yours"><b>Your answer:</b> ${escapeHtml(answerText(q,answers[qi]))}</div>
+           <div class="ra right"><b>Correct answer:</b> ${escapeHtml(correctText(q))}</div>
+           <div class="why"><b>Why:</b> ${escapeHtml(q.explain)}</div>`}
+    </div>`;
+  }).join("");
+
+  app.innerHTML = `
+    <div class="score-card">
+      <div class="verdict">authentication-results: quiz.dmarcbis; ${verdict}</div>
+      <div class="score-big">${correct} / ${QUESTIONS.length} <span style="font-size:1.2rem;opacity:.7">(${pct}%)</span></div>
+      <div class="score-sub">${sub}</div>
+    </div>
+    <div class="topics">
+      <h2>Score by topic</h2>
+      ${topicsHtml}
+    </div>
+    <div class="review-head" style="font-family:'Space Grotesk',sans-serif;font-size:1.15rem;margin-bottom:14px;">Full review</div>
+    ${reviewHtml}
+    <div class="nav" style="justify-content:center;margin-top:28px;">
+      <button class="btn-main" onclick="restart()">Retake quiz</button>
+    </div>`;
+  window.scrollTo({top:0});
+}
+
+function restart(){
+  init();
+  renderIntro();
+}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+init();
+renderIntro();
+</script>
+</body>
+</html>
