@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DKIM2 Knowledge Quiz</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap');
+
+  :root{
+    --ink:#0f1420;
+    --panel:#161d2c;
+    --panel-2:#1b2436;
+    --hairline:#2a3348;
+    --gold:#c9a34e;
+    --gold-dim:#8a7239;
+    --teal:#49b6a2;
+    --coral:#e0664f;
+    --text:#e9e7df;
+    --muted:#8f98ac;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(201,163,78,0.08), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, rgba(73,182,162,0.06), transparent 60%),
+      var(--ink);
+    color:var(--text);
+    font-family:var(--serif);
+    min-height:100vh;
+    line-height:1.5;
+  }
+  .wrap{
+    max-width:760px;
+    margin:0 auto;
+    padding:40px 20px 80px;
+  }
+
+  /* ---- Header ---- */
+  header{
+    margin-bottom:32px;
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--gold);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:8px;height:8px;
+    border-radius:50%;
+    background:var(--gold);
+    box-shadow:0 0 0 3px rgba(201,163,78,0.18);
+  }
+  h1{
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:clamp(28px,5vw,38px);
+    margin:10px 0 8px;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    color:var(--muted);
+    font-size:15.5px;
+    max-width:56ch;
+  }
+
+  /* ---- Chain progress (signature-chain motif) ---- */
+  .chain{
+    margin:28px 0 0;
+    display:flex;
+    align-items:center;
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--muted);
+    gap:6px;
+    overflow-x:auto;
+    padding-bottom:6px;
+  }
+  .chain-track{
+    flex:1;
+    height:3px;
+    background:var(--hairline);
+    border-radius:2px;
+    position:relative;
+    overflow:hidden;
+    min-width:60px;
+  }
+  .chain-fill{
+    position:absolute;
+    left:0;top:0;bottom:0;
+    width:0%;
+    background:linear-gradient(90deg, var(--gold-dim), var(--gold));
+    transition:width .25s ease;
+  }
+  .chain-label{white-space:nowrap;}
+  .chain-label b{color:var(--gold);}
+
+  /* ---- Card ---- */
+  .card{
+    background:var(--panel);
+    border:1px solid var(--hairline);
+    border-radius:10px;
+    padding:28px 26px;
+    margin-top:22px;
+    position:relative;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    left:0;top:18px;bottom:18px;
+    width:3px;
+    border-radius:2px;
+    background:var(--gold-dim);
+  }
+  .qmeta{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--muted);
+    display:flex;
+    gap:10px;
+    margin-bottom:12px;
+    align-items:center;
+  }
+  .tag{
+    padding:2px 8px;
+    border:1px solid var(--hairline);
+    border-radius:20px;
+    color:var(--gold);
+  }
+  .qtext{
+    font-size:19px;
+    font-weight:600;
+    margin:0 0 20px;
+    line-height:1.45;
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .opt{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:13px 15px;
+    background:var(--panel-2);
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+    font-size:15px;
+  }
+  .opt:hover{border-color:var(--gold-dim);}
+  .opt.selected{
+    border-color:var(--gold);
+    background:rgba(201,163,78,0.09);
+  }
+  .opt .box{
+    flex:0 0 auto;
+    width:18px;height:18px;
+    margin-top:2px;
+    border:1.5px solid var(--muted);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    color:transparent;
+  }
+  .opt.single .box{border-radius:50%;}
+  .opt.multi .box{border-radius:4px;}
+  .opt.selected .box{
+    border-color:var(--gold);
+    color:var(--ink);
+    background:var(--gold);
+  }
+  .hint{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--muted);
+    margin-top:16px;
+  }
+
+  /* ---- Nav ---- */
+  .nav{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:22px;
+    gap:12px;
+  }
+  button{
+    font-family:var(--mono);
+    font-size:13px;
+    letter-spacing:.03em;
+    padding:12px 20px;
+    border-radius:7px;
+    border:1px solid var(--hairline);
+    background:var(--panel-2);
+    color:var(--text);
+    cursor:pointer;
+    transition:border-color .15s, background .15s, opacity .15s;
+  }
+  button:hover:not(:disabled){border-color:var(--gold-dim);}
+  button:disabled{opacity:0.35;cursor:not-allowed;}
+  button.primary{
+    background:var(--gold);
+    color:#20180a;
+    border-color:var(--gold);
+    font-weight:600;
+  }
+  button.primary:hover:not(:disabled){background:#d8b25f;}
+
+  /* ---- Intro / results ---- */
+  .intro-card, .results{
+    background:var(--panel);
+    border:1px solid var(--hairline);
+    border-radius:10px;
+    padding:32px 28px;
+    margin-top:22px;
+  }
+  .intro-list{
+    margin:18px 0 0;
+    padding:0;
+    list-style:none;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px 18px;
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--muted);
+  }
+  .intro-list li{
+    border-left:2px solid var(--hairline);
+    padding-left:10px;
+  }
+  .intro-list b{color:var(--text);font-weight:600;}
+
+  .score-hero{
+    text-align:center;
+    padding:10px 0 26px;
+    border-bottom:1px solid var(--hairline);
+    margin-bottom:26px;
+  }
+  .score-num{
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:64px;
+    color:var(--gold);
+    line-height:1;
+  }
+  .score-label{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-top:8px;
+  }
+  .score-msg{
+    margin-top:14px;
+    font-size:15.5px;
+    color:var(--text);
+  }
+
+  .review-item{
+    padding:18px 0;
+    border-bottom:1px solid var(--hairline);
+  }
+  .review-item:last-child{border-bottom:none;}
+  .review-head{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    font-size:15.5px;
+    font-weight:600;
+  }
+  .badge{
+    flex:0 0 auto;
+    font-family:var(--mono);
+    font-size:11px;
+    padding:2px 8px;
+    border-radius:20px;
+    margin-top:2px;
+  }
+  .badge.correct{background:rgba(73,182,162,0.15);color:var(--teal);border:1px solid rgba(73,182,162,0.4);}
+  .badge.wrong{background:rgba(224,102,79,0.15);color:var(--coral);border:1px solid rgba(224,102,79,0.4);}
+  .review-answers{
+    margin-top:10px;
+    font-size:14px;
+    color:var(--muted);
+    padding-left:2px;
+  }
+  .review-answers div{margin-bottom:4px;}
+  .review-answers .yours-wrong{color:var(--coral);}
+  .review-answers .correct-ans{color:var(--teal);}
+  .explain{
+    margin-top:10px;
+    background:var(--panel-2);
+    border:1px solid var(--hairline);
+    border-left:3px solid var(--coral);
+    border-radius:6px;
+    padding:12px 14px;
+    font-size:14px;
+    color:var(--text);
+  }
+
+  .footer-note{
+    text-align:center;
+    color:var(--muted);
+    font-family:var(--mono);
+    font-size:11.5px;
+    margin-top:30px;
+    line-height:1.6;
+  }
+
+  @media (max-width:520px){
+    .intro-list{grid-template-columns:1fr;}
+    .card, .intro-card, .results{padding:22px 18px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ======================= QUESTION BANK ======================= */
+/* type: "single" | "multi" | "boolean"
+   correct: index (single/boolean) or array of indices (multi) */
+const QUESTIONS = [
+
+// SECTION A — Basics & purpose
+{s:"Basics", type:"single", q:"What is the main purpose of DKIM2?", options:["Encrypt email content end-to-end","Let a domain owner prove it handled a message","Replace SMTP entirely","Filter out spam"], correct:1,
+ explain:"DKIM2 links a domain to a message to prove that domain handled it."},
+
+{s:"Basics", type:"boolean", q:"DKIM2 replaces DKIM1 right away, with no overlap period.", correct:1,
+ explain:"DKIM2 skips DKIM1 and ARC signatures when hashing, so both can exist on the same message at once."},
+
+{s:"Basics", type:"single", q:"What does \"DKIM1\" mean in DKIM2 documents?", options:["An early, failed draft of DKIM2","The original DKIM protocol","A backup mode of DKIM2","An old hashing method"], correct:1,
+ explain:"DKIM2 calls the original DKIM protocol \"DKIM1\" to tell the two apart."},
+
+{s:"Basics", type:"single", q:"How does a verifier check a DKIM2 signature?", options:["By emailing the sender","By checking a certificate authority","By looking up the public key in DNS","By checking a central DKIM2 database"], correct:2,
+ explain:"Just like DKIM1, checking a signature means looking up the public key in the sender's domain DNS."},
+
+{s:"Basics", type:"boolean", q:"DKIM2 signs a hash of the message, not the raw message itself.", correct:0,
+ explain:"The message content is hashed first, and that hash is what gets signed."},
+
+{s:"Basics", type:"single", q:"What happens as a message moves through several mail servers under DKIM2?", options:["Only the first signature matters","Each server that changes the message adds its own signature, building a chain","The message is decrypted and re-encrypted","Servers must remove old signatures"], correct:1,
+ explain:"Every server that changes something signs its own change, so a chain of signatures builds up."},
+
+{s:"Basics", type:"multi", q:"Which of these are goals of DKIM2? (select all that apply)", options:["Spot messages that were resent without permission (\"replay\")","Send bounce messages only to the real sender","Block all spam completely","Let recipients give feedback, like marking a message as spam"], correct:[0,1,3],
+ explain:"DKIM2 doesn't claim to stop all spam — its goals are replay detection, safer bounce handling, and optional recipient feedback."},
+
+{s:"Basics", type:"single", q:"What is DKIM2's approach to optional features?", options:["Add many optional settings for flexibility","Make most parts mandatory, since optional parts caused problems in DKIM1","Let each mail provider choose its own rules","Remove all required rules"], correct:1,
+ explain:"Too many optional choices caused interop problems in DKIM1, so DKIM2 keeps the core parts mandatory."},
+
+{s:"Basics", type:"boolean", q:"DKIM2 uses one fixed way to prepare a message for signing, instead of offering a choice like DKIM1 did.", correct:0,
+ explain:"DKIM2 keeps only the equivalent of DKIM1's \"relaxed\" mode, since almost everyone used that mode anyway."},
+
+{s:"Basics", type:"single", q:"If a big, incompatible change is needed in the future, what will happen?", options:["DKIM2 gets a new \"v=3\" tag","It will be called DKIM3 instead of a new DKIM2 version","DKIM2 is dropped with no replacement","Regional versions get created"], correct:1,
+ explain:"A breaking change is expected to be called DKIM3, not a new version number inside DKIM2."},
+
+// SECTION B — Header fields & signing mechanics
+{s:"Mechanics", type:"single", q:"What new header field does DKIM2 add to store hash info about the message?", options:["X-DKIM2-Hash","Message-Instance","Content-Digest","Mail-Fingerprint"], correct:1,
+ explain:"Message-Instance is the new header field that carries the hash values for the message."},
+
+{s:"Mechanics", type:"single", q:"What does the DKIM2-Signature header field cover?", options:["Only the message body","The Message-Instance header, the DKIM2-Signature header, and envelope/timing details","The full SMTP session","Only the Subject line"], correct:1,
+ explain:"The DKIM2-Signature covers the Message-Instance header, itself, and details like the signing domain, envelope, and timestamp."},
+
+{s:"Mechanics", type:"boolean", q:"When DKIM2 hashes the headers, it skips the Message-Instance and DKIM2-Signature headers themselves.", correct:0,
+ explain:"Skipping them avoids counting the same data twice, since they're added into the signed value afterward."},
+
+{s:"Mechanics", type:"single", q:"What does the \"i=\" tag show in a DKIM2-Signature header?", options:["The sender's IP address","The position of that signature in the chain","The signing algorithm","The number of servers expected"], correct:1,
+ explain:"\"i=\" numbers each signature in order, showing its place in the chain."},
+
+{s:"Mechanics", type:"single", q:"What number does the original sender use for \"i=\"?", options:["0","1","The domain name","A random ID"], correct:1,
+ explain:"The first sender always starts the chain at i=1."},
+
+{s:"Mechanics", type:"boolean", q:"If a number is skipped in the \"i=\" chain — for example i=1 then i=3 — the whole message is treated as unsigned.", correct:0,
+ explain:"A gap in the numbering breaks the chain, so DKIM2 treats the message as if it had no valid signature at all."},
+
+{s:"Mechanics", type:"single", q:"When DKIM2 hashes a header, what part gets lowercased?", options:["Both the header name and its value","Only the header name","Only the value","Nothing — case is kept as-is"], correct:1,
+ explain:"Only the header name is lowercased. Example: \"SUBJect: AbC\" becomes \"subject: AbC\" — the value stays untouched."},
+
+{s:"Mechanics", type:"multi", q:"Which of these are allowed in a DKIM2-Signature header field?", options:["Unknown tags that aren't defined yet","A flag marking that the message was sent to more than one address","Unsigned file attachments added after the signature","A list of headers added while forwarding"], correct:[0,1,3],
+ explain:"Unknown tags, the \"exploded\" flag (for messages sent to multiple addresses), and a list of newly added headers are all allowed. Attachments aren't part of a signature header at all."},
+
+{s:"Mechanics", type:"single", q:"How does DKIM2 decide which headers get signed?", options:["Nothing is signed by default","A fixed, required list of headers is always signed","The whole email is signed, including any future headers","The recipient decides"], correct:1,
+ explain:"DKIM1 needed signers to list every header manually and add fake blank ones to block attacks. DKIM2 signs a fixed, required list by default instead."},
+
+{s:"Mechanics", type:"single", q:"What are the \"flags\" (the \"f=\" tag) in a DKIM2-Signature header used for?", options:["Storing the sender's password","Reporting what a server did to the message, or asking later servers to do something","Listing blocked IP addresses","Encrypting the Subject line"], correct:1,
+ explain:"Flags do one of two things: report an action already taken (like the \"exploded\" flag, meaning the message went to more than one address) or request an action from the servers that handle the mail next."},
+
+{s:"Mechanics", type:"single", q:"A mail server forwards a message without changing anything important. What can it do?", options:["It must still add a new DKIM2-Signature","It can skip adding a new signature","It must delete all old signatures","The message becomes unsigned automatically"], correct:1,
+ explain:"Plain forwarders that don't change anything meaningful don't have to add a signature, so they don't need to be \"DKIM2 aware.\""},
+
+{s:"Mechanics", type:"boolean", q:"DKIM2 messages must always be in MIME format.", correct:1,
+ explain:"Plain-text bodies work fine too — DKIM2 just treats the body as a stream of bytes either way."},
+
+// SECTION C — Keys, DNS & verification outcomes
+{s:"Keys & DNS", type:"single", q:"What happens if the public key (\"p=\") in DNS is empty?", options:["It's a temporary error — try again later","The key is treated as revoked","The key is still valid","DKIM2 falls back to using DKIM1"], correct:1,
+ explain:"An empty \"p=\" value means the key was revoked, so the check fails."},
+
+{s:"Keys & DNS", type:"single", q:"How many days after the \"t=\" timestamp can a signature be treated as expired?", options:["1 day","7 days","14 days","90 days"], correct:2,
+ explain:"A verifier may treat a signature as expired once more than 14 days have passed."},
+
+{s:"Keys & DNS", type:"boolean", q:"A verifier must ignore key records with a version (\"v=\") tag it doesn't support.", correct:0,
+ explain:"Unknown key versions are ignored rather than guessed at."},
+
+{s:"Keys & DNS", type:"single", q:"If a DNS key record doesn't match the expected format, what should happen?", options:["Fix it automatically and continue","Ignore it and fail with a syntax error","Treat it as valid anyway","Email the domain owner"], correct:1,
+ explain:"A broken key record is ignored, and the check fails with a syntax error."},
+
+{s:"Keys & DNS", type:"multi", q:"Which of these cause a DKIM2 check to fail?", options:["An empty public key","A signature older than the allowed time limit","A broken or unreadable key record","A message with more than one Received header"], correct:[0,1,2],
+ explain:"Multiple Received headers are totally normal for forwarded mail — that alone isn't a failure."},
+
+{s:"Keys & DNS", type:"single", q:"What is the concern about wildcard DNS records?", options:["They make lookups faster, which is risky","They can accidentally return a reply that looks like an invalid key record","They are banned by DKIM2","They revoke all keys under a domain"], correct:1,
+ explain:"A wildcard record can make DNS return something that isn't really a valid key — a known DNS quirk, not something specific to DKIM2."},
+
+{s:"Keys & DNS", type:"boolean", q:"DKIM2 still needs a DNS lookup to get the sender's public key, just like DKIM1.", correct:0,
+ explain:"The DNS-based key lookup carries over from DKIM1 into DKIM2."},
+
+{s:"Keys & DNS", type:"single", q:"What does the \"m=\" tag in a DKIM2-Signature header point to?", options:["The maximum allowed message size","The highest-numbered Message-Instance header field, showing who made the latest change","A priority level for the message","A request for two-factor authentication"], correct:1,
+ explain:"m= tells a verifier which Message-Instance header field holds the most recent revision, so they know who made the latest change to the message."},
+
+// SECTION D — Chain of custody / DKIM replay
+{s:"Replay defense", type:"single", q:"What attack does DKIM2's \"chain of custody\" protect against?", options:["DNS cache poisoning","DKIM replay","TLS downgrade attacks","Password brute-forcing"], correct:1,
+ explain:"Chain of custody is DKIM2's answer to the DKIM replay problem."},
+
+{s:"Replay defense", type:"single", q:"What is a \"DKIM replay\" attack, in simple terms?", options:["Someone forges a public key in DNS","A signed message is copied and resent to new people, and the signature still passes","A server is flooded with DNS requests","A verifier checks the same signature many times to slow things down"], correct:1,
+ explain:"A valid signature only proves who signed the content — not that this exact delivery was authorized. So a captured message can be resent elsewhere and still pass."},
+
+{s:"Replay defense", type:"single", q:"How does the chain-of-custody check work, at a high level?", options:["It checks that each server's \"who sent it to me\" matches the last server's \"who I sent it to\"","It compares Subject lines across signatures","It checks that every server used the same IP address","It requires the same encryption key at every step"], correct:0,
+ explain:"Each signature records who it received the message from. That's compared against what the previous hop said it sent to, linking the hops together."},
+
+{s:"Replay defense", type:"boolean", q:"The chain-of-custody check only compares domains, not the full email address.", correct:0,
+ explain:"Only the domain part is compared — the part before the \"@\" is ignored."},
+
+{s:"Replay defense", type:"single", q:"Why does DKIM2 allow a \"relaxed\" domain match instead of requiring an exact match?", options:["To make checks run faster","To support systems that use special bounce-handling subdomains","Because exact matching isn't possible in DNS","To let any domain match any other domain"], correct:1,
+ explain:"Many systems use bounce-handling subdomains, so a relaxed match still lets those line up correctly with the main domain."},
+
+{s:"Replay defense", type:"single", q:"Why would a replayed message fail the chain-of-custody check, even though its signature is still valid?", options:["It wouldn't fail — DKIM2 can't catch this","Because the new delivery path doesn't match what the chain expected","Because the body hash always changes on resend","Because Message-Instance is always missing on replay"], correct:1,
+ explain:"When an attacker resends the message, the new sending path doesn't line up with what the earlier signatures say should come next, so the check breaks."},
+
+{s:"Replay defense", type:"boolean", q:"The replay defense uses SMTP envelope info — who it was sent from and to — not just the headers and body.", correct:0,
+ explain:"This is a big difference from DKIM1, which never looks at envelope info at all."},
+
+{s:"Replay defense", type:"single", q:"What extra check involves the \"d=\" (signing domain) tag?", options:["It must match the sender's envelope domain","It must match the recipient's mail provider","It must resolve to a specific IP range","No extra check happens"], correct:0,
+ explain:"The signing domain is checked against the envelope sender domain, tying the signer's claim to the actual sending path."},
+
+// SECTION E — Backscatter defense
+{s:"Backscatter defense", type:"single", q:"What is \"backscatter\" in email?", options:["Replies that get delayed by spam filters","Bounce messages sent to an innocent person whose address was faked as the sender","A delay in DNS record updates","A type of key rotation"], correct:1,
+ explain:"A spammer fakes someone else's address as the sender. That innocent person then gets flooded with bounce messages for mail they never sent."},
+
+{s:"Backscatter defense", type:"single", q:"How does DKIM2 help reduce backscatter?", options:["It blocks all bounce messages","It helps make sure bounce messages only go to people who were really involved in sending the message","It encrypts all bounce messages","It sends every bounce to one central service"], correct:1,
+ explain:"Because each step is linked to the one before it, a system can check whether an address was really part of the delivery before sending it a bounce."},
+
+{s:"Backscatter defense", type:"boolean", q:"Because DKIM2 links each step to the one before it, a system can check if a bounce should really go to a given address.", correct:0,
+ explain:"That link between steps is exactly what closes the gap that backscatter abuse exploits."},
+
+{s:"Backscatter defense", type:"single", q:"Why is backscatter possible in normal, non-DKIM2 email?", options:["SMTP requires TLS for everything","Anyone can set the \"sender\" address with no built-in check","Servers can't send bounce messages at all","DNS records expire too quickly"], correct:1,
+ explain:"The sender address in a normal email envelope can be freely set by anyone, with nothing to verify it — that's the root cause."},
+
+{s:"Backscatter defense", type:"multi", q:"Which of these are true about how DKIM2 fights both replay and backscatter?", options:["Both use the same chain-of-custody idea","They are handled by two totally separate parts of the spec","Both rely on knowing which servers really handled the message","Neither one uses the SMTP envelope"], correct:[0,2],
+ explain:"Both protections come from the same idea: knowing which servers were genuinely part of the delivery path."},
+
+{s:"Backscatter defense", type:"single", q:"A message legitimately goes out to many people through a mailing list. How can a server tell this apart from a malicious \"replay\"?", options:["It can't — both look identical","A flag on the signature can mark that the message was meant to go to more than one address", "It checks the sender's IP reputation only","It waits 24 hours before delivering"], correct:1,
+ explain:"A flag exists specifically to mark a message as intentionally sent to multiple addresses, helping a server tell normal mailing-list activity apart from a malicious replay."},
+
+// SECTION F — Wrap-up / comparison
+{s:"Wrap-up", type:"boolean", q:"DKIM2 is already a finished, official RFC used everywhere.", correct:1,
+ explain:"DKIM2 is still an active draft being worked on — not yet a finished standard, and details can still change."},
+
+{s:"Wrap-up", type:"single", q:"What is DKIM2 right now?", options:["A published RFC","An active draft being worked on by the IETF","A private vendor whitepaper","A W3C recommendation"], correct:1,
+ explain:"It's still going through the IETF drafting process, so exact details may shift before it becomes an RFC."},
+
+{s:"Wrap-up", type:"single", q:"What's better about DKIM2 for forwarders and mailing lists that change messages?", options:["They can't change messages at all","They can sign their own changes, keeping the message traceable instead of just breaking the old signature","They must remove DKIM entirely","DKIM2 ignores their changes"], correct:1,
+ explain:"Under DKIM1, any change silently breaks the signature. DKIM2 lets each change be signed and tracked instead."},
+
+{s:"Wrap-up", type:"multi", q:"Which of these are new ideas in DKIM2 that DKIM1 didn't have?", options:["The Message-Instance header","Numbered signatures forming a chain (\"i=\")","Checks that use the SMTP envelope","A rule requiring SPF instead of signatures"], correct:[0,1,2],
+ explain:"DKIM2 doesn't replace signatures with SPF — it adds the Message-Instance header, numbered signatures, and envelope-based checks."},
+
+{s:"Wrap-up", type:"single", q:"Why does DKIM2 skip DKIM1 and ARC signatures when it calculates its hash?", options:["Because they're seen as useless","So other signature types can be added in any order without conflict","Because DKIM1 signatures always fail on DKIM2 mail","Because of character encoding issues"], correct:1,
+ explain:"This is purely about letting multiple signature types sit on the same message without interfering with each other."},
+
+{s:"Wrap-up", type:"boolean", q:"Learning DKIM2 is useful for support work because it fights the same kinds of problems — fake senders, abuse of trust — that DMARC, DKIM1, and SPF already deal with.", correct:0,
+ explain:"The exact mechanics differ, but the underlying problems being solved are the same ones DMARC/DKIM1/SPF already exist for."}
+];
+
+
+/* ======================= ENGINE ======================= */
+const state = { screen:"intro", idx:0, answers:new Array(QUESTIONS.length).fill(null) };
+const app = document.getElementById("app");
+
+function render(){
+  if(state.screen==="intro") return renderIntro();
+  if(state.screen==="quiz") return renderQuiz();
+  if(state.screen==="results") return renderResults();
+}
+
+function renderIntro(){
+  app.innerHTML = `
+    <header>
+      <div class="eyebrow">EasyDMARC · Internal Training</div>
+      <h1>DKIM2 Knowledge Quiz</h1>
+      <p class="sub">${QUESTIONS.length} questions covering DKIM2's purpose, signature chain mechanics, key/DNS verification, and — specifically — how it's designed to counter DKIM replay and email backscatter abuse. Based on the active IETF Working Group draft <span style="color:var(--gold)">draft-ietf-dkim-dkim2-spec</span>.</p>
+    </header>
+    <div class="intro-card">
+      <p style="margin:0 0 6px;font-weight:600;">Before you start</p>
+      <p style="color:var(--muted);font-size:14.5px;margin:0 0 10px;">Answers aren't scored question-by-question — you'll see your full results, correct answers, and explanations only at the end. Take your time.</p>
+      <ul class="intro-list">
+        <li><b>Format</b> — single choice, multi-select, true/false</li>
+        <li><b>Level</b> — low to medium complexity</li>
+        <li><b>Questions</b> — ${QUESTIONS.length}</li>
+        <li><b>Topics</b> — mechanics, keys, replay, backscatter</li>
+      </ul>
+    </div>
+    <div class="nav" style="justify-content:flex-end;margin-top:26px;">
+      <button class="primary" id="start-btn">Start quiz →</button>
+    </div>
+  `;
+  document.getElementById("start-btn").onclick = ()=>{ state.screen="quiz"; state.idx=0; render(); };
+}
+
+function renderQuiz(){
+  const q = QUESTIONS[state.idx];
+  const total = QUESTIONS.length;
+  const pct = Math.round((state.idx/total)*100);
+  const isMulti = q.type==="multi";
+  const opts = q.type==="boolean" ? ["True","False"] : q.options;
+  const selected = state.answers[state.idx];
+  const selArr = selected==null ? [] : (Array.isArray(selected)?selected:[selected]);
+
+  app.innerHTML = `
+    <header>
+      <div class="eyebrow">EasyDMARC · Internal Training</div>
+      <h1 style="font-size:22px;">DKIM2 Knowledge Quiz</h1>
+    </header>
+    <div class="chain">
+      <span class="chain-label"><b>i=${String(state.idx+1).padStart(2,'0')}</b>/${total}</span>
+      <div class="chain-track"><div class="chain-fill" style="width:${pct}%"></div></div>
+      <span class="chain-label">${q.s}</span>
+    </div>
+    <div class="card">
+      <div class="qmeta">
+        <span class="tag">${q.type==="boolean"?"True / False":q.type==="multi"?"Select all that apply":"Select one"}</span>
+      </div>
+      <p class="qtext">${q.q}</p>
+      <div class="options" id="options">
+        ${opts.map((o,i)=>`
+          <div class="opt ${isMulti?'multi':'single'} ${selArr.includes(i)?'selected':''}" data-i="${i}">
+            <span class="box">${selArr.includes(i)?'✓':''}</span>
+            <span>${o}</span>
+          </div>`).join("")}
+      </div>
+      <div class="hint">${isMulti ? "Tip: more than one answer may be correct." : ""}</div>
+    </div>
+    <div class="nav">
+      <button id="prev-btn" ${state.idx===0?'disabled':''}>← Back</button>
+      <button class="primary" id="next-btn">${state.idx===total-1?'Finish & see results':'Next →'}</button>
+    </div>
+  `;
+
+  document.querySelectorAll(".opt").forEach(el=>{
+    el.onclick = ()=>{
+      const i = parseInt(el.dataset.i);
+      if(isMulti){
+        let cur = state.answers[state.idx];
+        cur = Array.isArray(cur) ? [...cur] : [];
+        if(cur.includes(i)) cur = cur.filter(x=>x!==i);
+        else cur.push(i);
+        state.answers[state.idx] = cur;
+      } else {
+        state.answers[state.idx] = i;
+      }
+      renderQuiz();
+    };
+  });
+
+  document.getElementById("prev-btn").onclick = ()=>{ state.idx--; render(); };
+  document.getElementById("next-btn").onclick = ()=>{
+    if(state.idx===total-1){ state.screen="results"; render(); window.scrollTo(0,0); }
+    else { state.idx++; render(); }
+  };
+}
+
+function isCorrect(q, ans){
+  if(ans==null) return false;
+  if(q.type==="multi"){
+    const c = [...q.correct].sort().join(",");
+    const a = [...ans].sort().join(",");
+    return c===a;
+  }
+  return ans===q.correct;
+}
+
+function renderResults(){
+  const total = QUESTIONS.length;
+  let score = 0;
+  QUESTIONS.forEach((q,i)=>{ if(isCorrect(q, state.answers[i])) score++; });
+  const pct = Math.round((score/total)*100);
+  let msg;
+  if(pct>=90) msg = "Excellent — you've got a solid grasp of DKIM2's chain-of-custody model.";
+  else if(pct>=70) msg = "Good work — a review of the replay/backscatter sections would round things out.";
+  else if(pct>=50) msg = "Decent start. Worth re-reading the chain-of-custody and Message-Instance sections.";
+  else msg = "Worth a full re-read of the draft before revisiting this quiz.";
+
+  const opts = i => QUESTIONS[i].type==="boolean" ? ["True","False"] : QUESTIONS[i].options;
+
+  app.innerHTML = `
+    <header>
+      <div class="eyebrow">EasyDMARC · Internal Training</div>
+      <h1 style="font-size:26px;">Results</h1>
+    </header>
+    <div class="results">
+      <div class="score-hero">
+        <div class="score-num">${score}/${total}</div>
+        <div class="score-label">${pct}% correct</div>
+        <div class="score-msg">${msg}</div>
+      </div>
+      ${QUESTIONS.map((q,i)=>{
+        const correct = isCorrect(q, state.answers[i]);
+        const o = opts(i);
+        const yourAns = state.answers[i];
+        const yourArr = yourAns==null?[]:(Array.isArray(yourAns)?yourAns:[yourAns]);
+        const correctArr = Array.isArray(q.correct)?q.correct:[q.correct];
+        const yourText = yourArr.length ? yourArr.map(x=>o[x]).join(", ") : "No answer selected";
+        const correctText = correctArr.map(x=>o[x]).join(", ");
+        return `
+          <div class="review-item">
+            <div class="review-head">
+              <span class="badge ${correct?'correct':'wrong'}">${correct?'✓ Correct':'✕ Wrong'}</span>
+              <span>${i+1}. ${q.q}</span>
+            </div>
+            <div class="review-answers">
+              ${correct
+                ? `<div class="correct-ans">Your answer: ${yourText}</div>`
+                : `<div class="yours-wrong">Your answer: ${yourText}</div><div class="correct-ans">Correct answer: ${correctText}</div>`
+              }
+            </div>
+            ${!correct ? `<div class="explain">${q.explain}</div>` : ``}
+          </div>
+        `;
+      }).join("")}
+    </div>
+    <div class="nav" style="justify-content:center;margin-top:26px;">
+      <button id="retry-btn">↺ Retake the quiz</button>
+    </div>
+    <p class="footer-note">Based on draft-ietf-dkim-dkim2-spec (active IETF WG Internet-Draft) — mechanics may shift in later revisions before RFC publication.</p>
+  `;
+
+  document.getElementById("retry-btn").onclick = ()=>{
+    state.screen="intro"; state.idx=0; state.answers=new Array(QUESTIONS.length).fill(null);
+    render(); window.scrollTo(0,0);
+  };
+}
+
+render();
+</script>
+</body>
+</html>
